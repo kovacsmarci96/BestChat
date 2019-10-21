@@ -211,7 +211,14 @@ public class MessageActivity extends AppCompatActivity {
                             String days = String.valueOf(day);
 
                             if (user.getStatus().equals("Offline")) {
-                                if (hour > 0) {
+                                if( day > 0){
+                                    if(day == 1) {
+                                        tvStatus.setText("Offline for " + 1 + " day.");
+                                    } else {
+                                        tvStatus.setText("Offline for " + days + " days.");
+                                    }
+                                }
+                                else if (hour > 0) {
                                     if (hour == 1) {
                                         tvStatus.setText("Offline for " + hours + " hour.");
                                     } else {
@@ -222,12 +229,6 @@ public class MessageActivity extends AppCompatActivity {
                                         tvStatus.setText("Offline for " + 1 + " minute.");
                                     } else {
                                         tvStatus.setText("Offline for " + minutes + " minutes.");
-                                    }
-                                } else if (hour >= 24){
-                                    if(day == 1) {
-                                        tvStatus.setText("Offline for " + 1 + " day.");
-                                    } else {
-                                        tvStatus.setText("Offline for " + days + " days.");
                                     }
                                 }
                             }
@@ -241,7 +242,6 @@ public class MessageActivity extends AppCompatActivity {
                         try {
                             while (!isInterrupted()) {
                                 Thread.sleep(1000);
-                                Log.d("Még futok", "running");
                                 runOnUiThread(offRunnable);
                             }
                         } catch (InterruptedException e) {
