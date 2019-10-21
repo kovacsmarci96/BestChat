@@ -179,7 +179,6 @@ public class ProfileActivity extends AppCompatActivity {
         if(userUID==fbUser.getUid()){
             showMyProfile();
         } else {
-            showOtherProfile();
             checkFriendship();
         }
 
@@ -320,14 +319,12 @@ public class ProfileActivity extends AppCompatActivity {
                 for(int i = 0; i < allUsers.size();i++) {
                     if(allUsers.get(i).getId().equals(userUID)){
                         if(allUsers.get(i).getWhocanseemyprofile().equals("Everyone")){
-                            showProfileforEveryone();
+                            showProfileforEveryone(userUID);
                         } else if (allUsers.get(i).getWhocanseemyprofile().equals("Only friends")){
-                            for(int j = 0; j < friendUsers.size(); j++){
-                                if(friendUsers.get(j).getId().equals(userUID)){
-                                    showProfileforEveryone();
-                                } else {
-                                    showProfileforNotFriends();
-                                }
+                            if(isFriend(friendUsers,userUID)){
+                                showProfileforEveryone(userUID);
+                            } else {
+                                showProfileforNotFriends(userUID);
                             }
                         }
                     }
@@ -339,6 +336,15 @@ public class ProfileActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public boolean isFriend(List<User> friendUsers, String userUID){
+        for(int i = 0; i < friendUsers.size(); i++){
+            if(friendUsers.get(i).getId().equals(userUID)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void showMyProfile(){
@@ -414,75 +420,6 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    public void showOtherProfile(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(userUID);
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-
-                tv1Username.setText(user.getUsername());
-                tv1Email.setText(user.getEmail());
-
-                tv1Fullname.setText(user.getFullname());
-                tv1BirthDate.setText(user.getBornTime());
-                tv1BirthPlace.setText(user.getBornTown());
-                tv1HomeTown.setText(user.getHometown());
-                tv1PhoneNumber.setText(user.getNumber());
-
-                edUsername.setText(user.getUsername());
-                edFullname.setText(user.getFullname());
-                edBirthDate.setText(user.getBornTime());
-                edBirthPlace.setText(user.getBornTown());
-                edHomeTown.setText(user.getHometown());
-                edPhoneNumber.setText(user.getNumber());
-
-                if(user.getUsername().equals("default") || user.getUsername().isEmpty()){
-                    tvUsername.setVisibility(View.INVISIBLE);
-                    tv1Username.setVisibility(View.INVISIBLE);
-                }
-
-                if(user.getFullname().equals("default") || user.getFullname().isEmpty()){
-                    tvFullname.setVisibility(View.INVISIBLE);
-                    tv1Fullname.setVisibility(View.INVISIBLE);
-                }
-
-                if(user.getNumber().equals("default") || user.getNumber().isEmpty()){
-                    tvPhoneNumber.setVisibility(View.INVISIBLE);
-                    tv1PhoneNumber.setVisibility(View.INVISIBLE);
-                }
-
-                if(user.getBornTime().equals("default") || user.getBornTime().isEmpty()){
-                    tvBirthDate.setVisibility(View.INVISIBLE);
-                    tv1BirthDate.setVisibility(View.INVISIBLE);
-                }
-
-                if(user.getHometown().equals("default") || user.getHometown().isEmpty()){
-                    tvHomeTown.setVisibility(View.INVISIBLE);
-                    tv1HomeTown.setVisibility(View.INVISIBLE);
-                }
-
-                if(user.getBornTown().equals("default") || user.getBornTown().isEmpty()){
-                    tvBirthPlace.setVisibility(View.INVISIBLE);
-                    tv1BirthPlace.setVisibility(View.INVISIBLE);
-                }
-
-                if(user.getImageURL().equals("default")){
-                    profile_image.setImageResource(R.mipmap.ic_launcher);
-                } else {
-                    Glide.with(ProfileActivity.this).load(user.getImageURL()).into(profile_image);
-                }
-
-                tvSeeMyProfile.setVisibility(View.INVISIBLE);
-                radioGroup.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     private void updateLabel(){
         String myFormat = "yyyy.MM.dd EEEE";
@@ -581,6 +518,7 @@ public class ProfileActivity extends AppCompatActivity {
                 tv1HomeTown.setVisibility(View.VISIBLE);
                 tv1BirthPlace.setVisibility(View.VISIBLE);
                 tv1BirthDate.setVisibility(View.VISIBLE);
+
 
                 int radioID = radioGroup.getCheckedRadioButtonId();
                 RadioButton rb = findViewById(radioID);
@@ -775,44 +713,130 @@ public class ProfileActivity extends AppCompatActivity {
         return p1;
     }
 
-    public void showProfileforEveryone(){
-        tvEmail.setVisibility(View.VISIBLE);
-        tv1Email.setVisibility(View.VISIBLE);
-        tvHomeTown.setVisibility(View.VISIBLE);
-        tv1HomeTown.setVisibility(View.VISIBLE);
-        tv1BirthPlace.setVisibility(View.VISIBLE);
-        tvBirthPlace.setVisibility(View.VISIBLE);
-        tvBirthDate.setVisibility(View.VISIBLE);
-        tv1BirthDate.setVisibility(View.VISIBLE);
-        tvPhoneNumber.setVisibility(View.VISIBLE);
-        tv1PhoneNumber.setVisibility(View.VISIBLE);
-        edBirthDate.setVisibility(View.VISIBLE);
-        edBirthPlace.setVisibility(View.VISIBLE);
-        edHomeTown.setVisibility(View.VISIBLE);
-        edPhoneNumber.setVisibility(View.VISIBLE);
-        edUsername.setVisibility(View.VISIBLE);
-        edFullname.setVisibility(View.VISIBLE);
-        edEmail.setVisibility(View.VISIBLE);
+    public void showProfileforEveryone(String userUID){
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(userUID);
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User myUser = dataSnapshot.getValue(User.class);
+
+                tv1Username.setText(myUser.getUsername());
+                tv1Email.setText(myUser.getEmail());
+
+                tv1Fullname.setText(myUser.getFullname());
+                tv1BirthDate.setText(myUser.getBornTime());
+                tv1BirthPlace.setText(myUser.getBornTown());
+                tv1HomeTown.setText(myUser.getHometown());
+                tv1PhoneNumber.setText(myUser.getNumber());
+
+                edUsername.setText(myUser.getUsername());
+                edFullname.setText(myUser.getFullname());
+                edBirthDate.setText(myUser.getBornTime());
+                edBirthPlace.setText(myUser.getBornTown());
+                edHomeTown.setText(myUser.getHometown());
+                edPhoneNumber.setText(myUser.getNumber());
+
+                if(myUser.getFullname().equals("default") || myUser.getFullname().equals("")){
+                    tvFullname.setVisibility(View.INVISIBLE);
+                    tv1Fullname.setVisibility(View.INVISIBLE);
+                }
+
+                if(myUser.getNumber().equals("default") || myUser.getNumber().isEmpty()){
+                    tvPhoneNumber.setVisibility(View.INVISIBLE);
+                    tv1PhoneNumber.setVisibility(View.INVISIBLE);
+                }
+
+                if(myUser.getBornTime().equals("default") || myUser.getBornTime().isEmpty()){
+                    tvBirthDate.setVisibility(View.INVISIBLE);
+                    tv1BirthDate.setVisibility(View.INVISIBLE);
+                }
+
+                if(myUser.getHometown().equals("default") || myUser.getHometown().isEmpty()){
+                    tvHomeTown.setVisibility(View.INVISIBLE);
+                    tv1HomeTown.setVisibility(View.INVISIBLE);
+                }
+
+                if(myUser.getBornTown().equals("default") || myUser.getBornTown().isEmpty()){
+                    tvBirthPlace.setVisibility(View.INVISIBLE);
+                    tv1BirthPlace.setVisibility(View.INVISIBLE);
+                }
+
+                if(myUser.getImageURL().equals("default")){
+                    profile_image.setImageResource(R.mipmap.ic_launcher);
+                } else {
+                    Glide.with(ProfileActivity.this).load(myUser.getImageURL()).into(profile_image);
+                }
+
+                radioGroup.setVisibility(View.INVISIBLE);
+                tvSeeMyProfile.setVisibility(View.INVISIBLE);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
-    public void showProfileforNotFriends(){
-        tvEmail.setVisibility(View.INVISIBLE);
-        tv1Email.setVisibility(View.INVISIBLE);
-        tvHomeTown.setVisibility(View.INVISIBLE);
-        tv1HomeTown.setVisibility(View.INVISIBLE);
-        tv1BirthPlace.setVisibility(View.INVISIBLE);
-        tvBirthPlace.setVisibility(View.INVISIBLE);
-        tvBirthDate.setVisibility(View.INVISIBLE);
-        tv1BirthDate.setVisibility(View.INVISIBLE);
-        tvPhoneNumber.setVisibility(View.INVISIBLE);
-        tv1PhoneNumber.setVisibility(View.INVISIBLE);
-        edBirthDate.setVisibility(View.INVISIBLE);
-        edBirthPlace.setVisibility(View.INVISIBLE);
-        edHomeTown.setVisibility(View.INVISIBLE);
-        edPhoneNumber.setVisibility(View.INVISIBLE);
-        edUsername.setVisibility(View.INVISIBLE);
-        edFullname.setVisibility(View.INVISIBLE);
-        edEmail.setVisibility(View.INVISIBLE);
+    public void showProfileforNotFriends(String userUID){
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(userUID);
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User myUser = dataSnapshot.getValue(User.class);
+
+                tv1Username.setText(myUser.getUsername());
+
+                if(myUser.getFullname().equals("default") || myUser.getFullname().equals("")){
+                    tvFullname.setVisibility(View.INVISIBLE);
+                    tv1Fullname.setVisibility(View.INVISIBLE);
+                }
+
+                if(myUser.getUsername().equals("default") || myUser.getUsername().isEmpty()){
+                    tvUsername.setVisibility(View.INVISIBLE);
+                    tv1Username.setVisibility(View.INVISIBLE);
+                }
+
+                if(myUser.getImageURL().equals("default")){
+                    profile_image.setImageResource(R.mipmap.ic_launcher);
+                } else {
+                    Glide.with(ProfileActivity.this).load(myUser.getImageURL()).into(profile_image);
+                }
+
+                tvEmail.setVisibility(View.INVISIBLE);
+                tv1Email.setVisibility(View.INVISIBLE);
+                tvHomeTown.setVisibility(View.INVISIBLE);
+                tv1HomeTown.setVisibility(View.INVISIBLE);
+                tv1BirthPlace.setVisibility(View.INVISIBLE);
+                tvBirthPlace.setVisibility(View.INVISIBLE);
+                tvBirthDate.setVisibility(View.INVISIBLE);
+                tv1BirthDate.setVisibility(View.INVISIBLE);
+                tvPhoneNumber.setVisibility(View.INVISIBLE);
+                tv1PhoneNumber.setVisibility(View.INVISIBLE);
+
+                edBirthDate.setVisibility(View.INVISIBLE);
+                edBirthPlace.setVisibility(View.INVISIBLE);
+                edHomeTown.setVisibility(View.INVISIBLE);
+                edPhoneNumber.setVisibility(View.INVISIBLE);
+                edUsername.setVisibility(View.INVISIBLE);
+                edFullname.setVisibility(View.INVISIBLE);
+                edEmail.setVisibility(View.INVISIBLE);
+
+
+                radioGroup.setVisibility(View.INVISIBLE);
+                tvSeeMyProfile.setVisibility(View.INVISIBLE);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 }
